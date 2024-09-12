@@ -12,7 +12,7 @@ You can access can data in Go via USB, including sending and receiving data, and
 ## Support
 System: Windows、Linux、MacOS
 
-Firmware: All standard [gs_usb](https://github.com/torvalds/linux/blob/master/drivers/net/can/usb/gs_usb.c) protocols defined by Linux, However, only tested on [candlelight](https://github.com/candle-usb/candleLight_fw) firmware. 
+Firmware: All standard [gs_usb](https://github.com/torvalds/linux/blob/master/drivers/net/can/usb/gs_usb.c) protocols defined by Linux, However, only tested on [candleLight](https://github.com/candle-usb/candleLight_fw) firmware. 
 
 
 ## Usage
