@@ -205,11 +205,11 @@ func (c *CanUSB) StartReadSteam(readCallBack func(data *GsHostFrame)) error {
 	var err error
 	c.ReadSteam, err = c.InEndpoint.NewStream(20, 10)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	c.WriteSteam, err = c.OutEndpoint.NewStream(20, 10)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	c.readCallBack = readCallBack
