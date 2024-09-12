@@ -16,6 +16,10 @@ Firmware: All standard [gs_usb](https://github.com/torvalds/linux/blob/master/dr
 
 
 ## Usage
+```shell
+go get -u github.com/Kirizu-Official/CANLib-Go
+```
+
 CANLib-Go is based on the [gousb](https://github.com/google/gousb) library, while the gousb is implemented by calling [libusb](https://github.com/libusb/libusb) through CGO, You must install the runtime and compilation environment as required by [gousb installation document](https://github.com/google/gousb?tab=readme-ov-file#installation) at first.
 
 ---
