@@ -13,6 +13,9 @@
 
 
 ## 使用
+```shell
+go get -u github.com/Kirizu-Official/CANLib-Go
+```
 CANLib-Go 是基于 [gousb](https://github.com/google/gousb) 开发的，不过 [gousb](https://github.com/google/gousb) 是通过 CGO 调用 [libusb](https://github.com/libusb/libusb) 实现的，所以你需要先按照 [gousb安装文档](https://github.com/google/gousb?tab=readme-ov-file#installation) 进行环境配置后才能使用这个库。
 
 ---
