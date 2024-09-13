@@ -10,7 +10,7 @@ import (
 )
 
 type CanUSB struct {
-	Control
+	CanControl Control
 
 	//context
 	ctx       context.Context
@@ -32,43 +32,44 @@ type CanUSB struct {
 
 	// write
 	WriteSteam *gousb.WriteStream
+	WriteLock  sync.Mutex
 }
 
-func New(ctx context.Context, d *gousb.Device) (error, *CanUSB) {
+func New(ctx context.Context, d *gousb.Device) (*CanUSB, error) {
 	d.ControlTimeout = time.Millisecond * 100
 	defaultInterface, err := d.Config(1)
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 	endpoint, err := defaultInterface.Interface(0, 0)
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 	inEndpoint, err := endpoint.InEndpoint(1)
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 	outEndpoint, err := endpoint.OutEndpoint(2)
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 	can := &CanUSB{}
 	can.ctx, can.ctxCancel = context.WithCancel(ctx)
-	can.Control = Control{
+	can.CanControl = Control{
 		Device:      d,
 		InEndpoint:  inEndpoint,
 		OutEndpoint: outEndpoint,
 	}
 
-	err = can.GetBreqDeviceConfig()
+	err = can.CanControl.GetBreqDeviceConfig()
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
-	_, err = can.GetGsUsbBreqBtConst()
+	_, err = can.CanControl.GetGsUsbBreqBtConst()
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
-	return nil, can
+	return can, nil
 }
 func (c *CanUSB) SetBitrate(bitrate int) error {
 
@@ -76,47 +77,47 @@ func (c *CanUSB) SetBitrate(bitrate int) error {
 	info.PropSeg = 1
 	info.Sjw = 1
 
-	if c.FClk == 48000000 {
+	if c.CanControl.FClk == 48000000 {
 		info.PhaseSeg1 = 12
 		info.PhaseSeg2 = 2
 
 		switch bitrate {
 		case 10000:
 			info.Brp = 300
-			return c.SetGsUsbBreqBittiming(info)
+			return c.CanControl.SetGsUsbBreqBittiming(info)
 		case 20000:
 			info.Brp = 150
-			return c.SetGsUsbBreqBittiming(info)
+			return c.CanControl.SetGsUsbBreqBittiming(info)
 		case 50000:
 			info.Brp = 60
-			return c.SetGsUsbBreqBittiming(info)
+			return c.CanControl.SetGsUsbBreqBittiming(info)
 		case 83333:
 			info.Brp = 36
-			return c.SetGsUsbBreqBittiming(info)
+			return c.CanControl.SetGsUsbBreqBittiming(info)
 		case 100000:
 			info.Brp = 30
-			return c.SetGsUsbBreqBittiming(info)
+			return c.CanControl.SetGsUsbBreqBittiming(info)
 		case 125000:
 			info.Brp = 24
-			return c.SetGsUsbBreqBittiming(info)
+			return c.CanControl.SetGsUsbBreqBittiming(info)
 		case 250000:
 			info.Brp = 12
-			return c.SetGsUsbBreqBittiming(info)
+			return c.CanControl.SetGsUsbBreqBittiming(info)
 		case 500000:
 			info.Brp = 6
-			return c.SetGsUsbBreqBittiming(info)
+			return c.CanControl.SetGsUsbBreqBittiming(info)
 		case 800000:
 			info.Brp = 4
-			return c.SetGsUsbBreqBittiming(info)
+			return c.CanControl.SetGsUsbBreqBittiming(info)
 		case 1000000:
 			info.Brp = 3
-			return c.SetGsUsbBreqBittiming(info)
+			return c.CanControl.SetGsUsbBreqBittiming(info)
 		default:
 			return errors.New("bitrate can not support")
 		}
 	}
 
-	if c.FClk == 80000000 {
+	if c.CanControl.FClk == 80000000 {
 		info.PhaseSeg1 = 12
 		info.PhaseSeg2 = 2
 		switch bitrate {
@@ -124,60 +125,63 @@ func (c *CanUSB) SetBitrate(bitrate int) error {
 			info.PhaseSeg1 = 12
 			info.PhaseSeg2 = 2
 			info.Brp = 500
-			return c.SetGsUsbBreqBittiming(info)
+			return c.CanControl.SetGsUsbBreqBittiming(info)
 		case 20000:
 			info.PhaseSeg1 = 12
 			info.PhaseSeg2 = 2
 			info.Brp = 250
-			return c.SetGsUsbBreqBittiming(info)
+			return c.CanControl.SetGsUsbBreqBittiming(info)
 		case 50000:
 			info.PhaseSeg1 = 12
 			info.PhaseSeg2 = 2
 			info.Brp = 100
-			return c.SetGsUsbBreqBittiming(info)
+			return c.CanControl.SetGsUsbBreqBittiming(info)
 		case 83333:
 			info.PhaseSeg1 = 12
 			info.PhaseSeg2 = 2
 			info.Brp = 60
-			return c.SetGsUsbBreqBittiming(info)
+			return c.CanControl.SetGsUsbBreqBittiming(info)
 		case 100000:
 			info.PhaseSeg1 = 12
 			info.PhaseSeg2 = 2
 			info.Brp = 50
-			return c.SetGsUsbBreqBittiming(info)
+			return c.CanControl.SetGsUsbBreqBittiming(info)
 		case 125000:
 			info.PhaseSeg1 = 12
 			info.PhaseSeg2 = 2
 			info.Brp = 40
-			return c.SetGsUsbBreqBittiming(info)
+			return c.CanControl.SetGsUsbBreqBittiming(info)
 		case 250000:
 			info.PhaseSeg1 = 12
 			info.PhaseSeg2 = 2
 			info.Brp = 20
-			return c.SetGsUsbBreqBittiming(info)
+			return c.CanControl.SetGsUsbBreqBittiming(info)
 		case 500000:
 			info.PhaseSeg1 = 12
 			info.PhaseSeg2 = 2
 			info.Brp = 10
-			return c.SetGsUsbBreqBittiming(info)
+			return c.CanControl.SetGsUsbBreqBittiming(info)
 		case 800000:
 			info.PhaseSeg1 = 7
 			info.PhaseSeg2 = 1
 			info.Brp = 10
-			return c.SetGsUsbBreqBittiming(info)
+			return c.CanControl.SetGsUsbBreqBittiming(info)
 		case 1000000:
 			info.PhaseSeg1 = 12
 			info.PhaseSeg2 = 2
 			info.Brp = 5
-			return c.SetGsUsbBreqBittiming(info)
+			return c.CanControl.SetGsUsbBreqBittiming(info)
 		default:
 			return errors.New("bitrate can not support")
 		}
 	}
 	return errors.New("must GetBreqDeviceConfig at first")
 }
-func (c *CanUSB) InitAndResetDevice(bitrate int, deviceFlag GsCanModeFlags, readDataCallBack func(data *GsHostFrame)) error {
-	err := c.SetDeviceMode(GsCanModeReset, GsCanModeFlags{})
+func (c *CanUSB) InitDevice(bitrate int, deviceFlag GsCanModeFlags, readDataCallBack func(data *GsHostFrame)) error {
+	if !c.WriteLock.TryLock() {
+		return errors.New("is already init")
+	}
+	err := c.CanControl.SetDeviceMode(GsCanModeReset, GsCanModeFlags{})
 	if err != nil {
 		return err
 	}
@@ -185,29 +189,28 @@ func (c *CanUSB) InitAndResetDevice(bitrate int, deviceFlag GsCanModeFlags, read
 	if err != nil {
 		return err
 	}
-	time.Sleep(time.Microsecond * 500)
-	err = c.SetDeviceMode(GsCanModeStart, deviceFlag)
+	err = c.CanControl.SetDeviceMode(GsCanModeStart, deviceFlag)
 	if err != nil {
 		return err
 	}
-	time.Sleep(time.Microsecond * 500)
-	err = c.StartReadSteam(readDataCallBack)
+
+	err = c.startReadSteam(readDataCallBack)
 	if err != nil {
 		return err
 	}
 
 	return nil
 }
-func (c *CanUSB) StartReadSteam(readCallBack func(data *GsHostFrame)) error {
-	if !c.bitrateSet {
+func (c *CanUSB) startReadSteam(readCallBack func(data *GsHostFrame)) error {
+	if !c.CanControl.bitrateSet {
 		return errors.New("canusb is not init")
 	}
 	var err error
-	c.ReadSteam, err = c.InEndpoint.NewStream(20, 10)
+	c.ReadSteam, err = c.CanControl.InEndpoint.NewStream(20, 10)
 	if err != nil {
 		return err
 	}
-	c.WriteSteam, err = c.OutEndpoint.NewStream(20, 10)
+	c.WriteSteam, err = c.CanControl.OutEndpoint.NewStream(20, 10)
 	if err != nil {
 		return err
 	}
@@ -216,7 +219,23 @@ func (c *CanUSB) StartReadSteam(readCallBack func(data *GsHostFrame)) error {
 	c.readData = make(chan []byte)
 
 	go c.readProcess()
-	c.newBusRead()
+	go func() {
+
+		time.Sleep(time.Second * 1)
+		//情况缓冲区数据
+		for {
+			select {
+			case <-c.readData:
+				continue
+			default:
+				goto out
+			}
+		}
+	out:
+		c.newBusRead()
+		c.WriteLock.Unlock()
+	}()
+
 	return nil
 }
 func (c *CanUSB) newBusRead() {
@@ -227,18 +246,14 @@ func (c *CanUSB) newBusRead() {
 func (c *CanUSB) readProcess() {
 	buf := make([]byte, 24)
 	for {
-		select {
-		case <-c.ctx.Done():
+
+		read, err := c.ReadSteam.ReadContext(c.ctx, buf)
+		if err != nil {
+			c.ctxCancel()
 			return
-		default:
-			read, err := c.ReadSteam.Read(buf)
-			if err != nil {
-				c.ctxCancel()
-				return
-			} else {
-				c.readData <- buf[:read]
-				c.readNum++
-			}
+		} else {
+			c.readData <- buf[:read]
+			c.readNum++
 		}
 	}
 }
@@ -248,8 +263,13 @@ func (c *CanUSB) canBusReadData() {
 	select {
 	case <-c.readDataCtx.Done():
 	case data := <-c.readData:
+	processData:
 		go c.readCallBack(UnpackFrame(data))
 		go c.canBusReadData()
+		if len(c.readData) > 0 {
+			data = <-c.readData
+			goto processData
+		}
 	}
 	c.readDataLock.Unlock()
 }
@@ -272,6 +292,8 @@ func (c *CanUSB) WriteAndReadSimpleData(canID uint32, data [8]byte, timeout time
 }
 
 func (c *CanUSB) WriteData(data GsHostFrame, timeout time.Duration, read bool) (*GsHostFrame, error) {
+	c.WriteLock.Lock()
+	defer c.WriteLock.Unlock()
 	c.readDataCancel()
 
 	c.readDataLock.Lock()
