@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"github.com/google/gousb"
-	"math"
 	"sync"
 	"time"
 )
@@ -274,24 +273,24 @@ func (c *CanUSB) canBusReadData() {
 	c.readDataLock.Unlock()
 }
 
-func (c *CanUSB) WriteAndReadSimpleData(canID uint32, data [8]byte, timeout time.Duration) (respID uint32, respData []byte, err error) {
-	var read *GsHostFrame
-	read, err = c.WriteData(&GsHostFrame{
-		EchoID:   math.MaxUint32,
-		CanID:    canID,
-		CanDlc:   1,
-		Channel:  0,
-		Flags:    0,
-		Reserved: 0,
-		Data:     data,
-	}, timeout, true)
-	if err != nil {
-		return 0, nil, err
-	}
-	return read.CanID, read.Data[:], nil
-}
+//func (c *CanUSB) WriteAndReadSimpleData(canID uint32, data [8]byte, timeout time.Duration) (respID uint32, respData []byte, err error) {
+//	var read *GsHostFrame
+//	read, err = c.WriteData(&GsHostFrame{
+//		EchoID:   math.MaxUint32,
+//		CanID:    canID,
+//		CanDlc:   1,
+//		Channel:  0,
+//		Flags:    0,
+//		Reserved: 0,
+//		Data:     data,
+//	}, timeout, true)
+//	if err != nil {
+//		return 0, nil, err
+//	}
+//	return read.CanID, read.Data[:], nil
+//}
 
-func (c *CanUSB) WriteData(data *GsHostFrame, timeout time.Duration, read bool) (*GsHostFrame, error) {
+func (c *CanUSB) WriteData(data *GsHostFrame, timeout time.Duration) (*GsHostFrame, error) {
 	c.WriteLock.Lock()
 	defer c.WriteLock.Unlock()
 	c.readDataCancel()
@@ -309,23 +308,23 @@ func (c *CanUSB) WriteData(data *GsHostFrame, timeout time.Duration, read bool) 
 		return nil, err
 	}
 
-	//loopBack
-	select {
-	case <-ctx.Done():
-		return nil, errors.New("read loopback data timeout")
-	case rdata := <-c.readData:
-		break
-	}
-
-	if read {
-		//data
-		select {
-		case <-ctx.Done():
-			return nil, errors.New("read response data timeout")
-		case readData := <-c.readData:
-			return UnpackFrame(readData), nil
-		}
-	}
+	////loopBack
+	//select {
+	//case <-ctx.Done():
+	//	return nil, errors.New("read loopback data timeout")
+	//case rdata := <-c.readData:
+	//	break
+	//}
+	//
+	//if read {
+	//	//data
+	//	select {
+	//	case <-ctx.Done():
+	//		return nil, errors.New("read response data timeout")
+	//	case readData := <-c.readData:
+	//		return UnpackFrame(readData), nil
+	//	}
+	//}
 
 	return nil, nil
 }
