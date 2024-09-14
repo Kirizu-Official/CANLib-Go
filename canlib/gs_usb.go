@@ -94,8 +94,6 @@ func (c *Control) SetDeviceMode(mode uint32, flags GsCanModeFlags) error {
 	bytesResult := data.Bytes()
 
 	_, err = c.Device.Control(gousb.ControlVendor, GsUsbBreqMode, 0, 0, bytesResult)
-	//fmt.Println("set mod", control, err, bytesResult)
-	//c.Device.Close()
 	return err
 }
 
@@ -108,8 +106,6 @@ func (c *Control) GetBreqDeviceConfig() error {
 	if control < 12 {
 		return errors.New("can not get device config")
 	}
-	//fmt.Println("get breq device config", control, err, data)
-	//fmt.Println(data[4:7], data[8:11])
 	c.Version.SwVersion = binary.LittleEndian.Uint32(data[4:8])
 	c.Version.HwVersion = binary.LittleEndian.Uint32(data[8:12])
 	return nil

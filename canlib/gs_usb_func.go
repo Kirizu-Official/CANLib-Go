@@ -2,9 +2,7 @@ package canlib
 
 import (
 	"context"
-	"encoding/hex"
 	"errors"
-	"fmt"
 	"github.com/google/gousb"
 	"math"
 	"sync"
@@ -316,7 +314,6 @@ func (c *CanUSB) WriteData(data *GsHostFrame, timeout time.Duration, read bool) 
 	case <-ctx.Done():
 		return nil, errors.New("read loopback data timeout")
 	case rdata := <-c.readData:
-		fmt.Println(hex.Dump(rdata))
 		break
 	}
 
@@ -326,7 +323,6 @@ func (c *CanUSB) WriteData(data *GsHostFrame, timeout time.Duration, read bool) 
 		case <-ctx.Done():
 			return nil, errors.New("read response data timeout")
 		case readData := <-c.readData:
-			fmt.Println(hex.Dump(readData))
 			return UnpackFrame(readData), nil
 		}
 	}
