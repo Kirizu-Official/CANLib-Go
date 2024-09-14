@@ -292,13 +292,11 @@ func (c *CanUSB) canBusReadData() {
 
 func (c *CanUSB) WriteData(data *GsHostFrame, timeout time.Duration) (*GsHostFrame, error) {
 	c.WriteLock.Lock()
-	defer c.WriteLock.Unlock()
-	c.readDataCancel()
+	//defer c.WriteLock.Unlock()
+	//c.readDataCancel()
 
-	c.readDataLock.Lock()
-	defer c.readDataLock.Unlock()
-
-	defer c.newBusRead()
+	//c.readDataLock.Lock()
+	//defer c.readDataLock.Unlock()
 
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
