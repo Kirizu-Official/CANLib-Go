@@ -82,7 +82,7 @@ func UnpackFrameFlag(flags byte) GsHostFrameFlags {
 	return flag
 }
 
-func PackNewFrame(frame GsHostFrame) []byte {
+func PackNewFrame(frame *GsHostFrame) []byte {
 	buf := new(bytes.Buffer)
 	binary.Write(buf, binary.LittleEndian, frame.EchoID)
 	binary.Write(buf, binary.LittleEndian, frame.CanID)

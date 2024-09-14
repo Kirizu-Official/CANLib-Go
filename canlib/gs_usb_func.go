@@ -278,7 +278,7 @@ func (c *CanUSB) canBusReadData() {
 
 func (c *CanUSB) WriteAndReadSimpleData(canID uint32, data [8]byte, timeout time.Duration) (respID uint32, respData []byte, err error) {
 	var read *GsHostFrame
-	read, err = c.WriteData(GsHostFrame{
+	read, err = c.WriteData(&GsHostFrame{
 		EchoID:   math.MaxUint32,
 		CanID:    canID,
 		CanDlc:   1,
@@ -293,7 +293,7 @@ func (c *CanUSB) WriteAndReadSimpleData(canID uint32, data [8]byte, timeout time
 	return read.CanID, read.Data[:], nil
 }
 
-func (c *CanUSB) WriteData(data GsHostFrame, timeout time.Duration, read bool) (*GsHostFrame, error) {
+func (c *CanUSB) WriteData(data *GsHostFrame, timeout time.Duration, read bool) (*GsHostFrame, error) {
 	c.WriteLock.Lock()
 	defer c.WriteLock.Unlock()
 	c.readDataCancel()
