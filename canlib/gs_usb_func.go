@@ -251,7 +251,7 @@ func (c *CanUSB) readProcess() {
 			c.ctxCancel()
 			return
 		} else {
-			c.readData <- buf[:read]
+			c.readData <- append([]byte(nil), buf[:read]...)
 			c.readNum++
 		}
 	}
