@@ -258,19 +258,14 @@ func (c *CanUSB) readProcess() {
 }
 
 func (c *CanUSB) canBusReadData() {
-	c.readDataLock.Lock()
-	select {
-	case <-c.readDataCtx.Done():
-	case data := <-c.readData:
-	processData:
-		go c.readCallBack(UnpackFrame(data))
-		go c.canBusReadData()
-		if len(c.readData) > 0 {
-			data = <-c.readData
-			goto processData
+	for {
+		select {
+		case <-c.readDataCtx.Done():
+			return
+		case data := <-c.readData:
+			c.readCallBack(UnpackFrame(data))
 		}
 	}
-	c.readDataLock.Unlock()
 }
 
 //func (c *CanUSB) WriteAndReadSimpleData(canID uint32, data [8]byte, timeout time.Duration) (respID uint32, respData []byte, err error) {
